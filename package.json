@@ -1,0 +1,13 @@
+{
+  "name": "api-fortaleza-nube",
+  "version": "1.0.0",
+  "description": "API Legacy cruda para plan de mejoramiento",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "cors": "^2.8.5"
+  }
+}
