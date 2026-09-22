@@ -1,26 +1,24 @@
-# ---- Fase 1: Contenerización segura ----
+# ---- Etapa 1: Build (instala dependencias) ----
+FROM node:20-alpine AS builder
 
-# Imagen base ligera y oficial
-FROM node:20-alpine
-
-# Directorio de trabajo dentro del contenedor
 WORKDIR /usr/src/app
 
-# Copiamos primero solo los manifiestos para aprovechar la cache de capas de Docker
 COPY package*.json ./
 
-# Instalamos SOLO dependencias de producción y limpiamos cache de npm
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --only=production
 
-# Copiamos el resto del código ya asignando la propiedad al usuario no-root
+# ---- Etapa 2: Runtime (imagen final, sin npm) ----
+FROM node:20-alpine
+
+WORKDIR /usr/src/app
+
+# Copiamos solo las dependencias ya instaladas y el código, no npm
+COPY --from=builder --chown=node:node /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node . .
 
-# Hardening: nunca ejecutar como root.
-# La imagen node:alpine ya trae creado el usuario/grupo "node" (uid 1000)
+# Hardening: nunca ejecutar como root
 USER node
 
-# Puerto en el que escucha la API (ver index.js -> process.env.PORT || 8080)
 EXPOSE 8080
 
-# Comando de arranque
 CMD ["node", "index.js"]
